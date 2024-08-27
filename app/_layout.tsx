@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 import { useFonts } from 'expo-font';
-import { Stack, useRouter } from 'expo-router';
+import { Link, Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -77,8 +77,26 @@ export function RootLayout() {
               <Ionicons name='arrow-back' size={34} color={Colors.dark} />
             </TouchableOpacity>
           ),
+          headerRight: () => (
+            <Link href={'/help'} asChild>
+              <TouchableOpacity>
+                <Ionicons
+                  name='help-circle-outline'
+                  size={34}
+                  color={Colors.dark}
+                />
+              </TouchableOpacity>
+            </Link>
+          ),
         }}
       />
+
+      <Stack.Screen
+        name='help'
+        options={{
+          presentation: 'modal',
+        }}
+      ></Stack.Screen>
     </Stack>
   );
 }
