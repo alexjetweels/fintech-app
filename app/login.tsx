@@ -1,5 +1,6 @@
 import Colors from '@/constants/Colors';
 import { defaultStyles } from '@/constants/Styles';
+import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -13,13 +14,23 @@ import {
   Platform,
 } from 'react-native';
 
+enum SignInType {
+  Phone,
+  Email,
+  Google,
+  Apple,
+}
+
 export default function Login() {
   const [countryCode, setCountryCode] = useState('+84');
   const [phoneNumber, setPhoneNumber] = useState('');
 
   const keyboardVerticalOffset = Platform.OS === 'ios' ? 80 : 0;
 
-  const handleSubmit = () => {};
+  const handleSubmit = async (type: SignInType) => {
+    if (type === SignInType.Phone) {
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -52,26 +63,96 @@ export default function Login() {
           />
         </View>
 
-        <Link href={'/sign-up'} replace asChild>
-          <TouchableOpacity style={defaultStyles.pillButton}>
-            <Text style={defaultStyles.textLink}>
-              Don't have an account? Sign up
-            </Text>
-          </TouchableOpacity>
-        </Link>
-
-        <View style={{ flex: 1 }}></View>
-
         <TouchableOpacity
           style={[
             defaultStyles.pillButton,
-            { marginTop: 20 },
             phoneNumber ? styles.enable : styles.disabled,
           ]}
-          onPress={handleSubmit}
+          onPress={() => handleSubmit(SignInType.Phone)}
         >
           <Text style={defaultStyles.buttonText}>
             {phoneNumber ? 'Log in' : 'Enter your phone'}
+          </Text>
+        </TouchableOpacity>
+
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 16,
+            marginTop: 20,
+          }}
+        >
+          <View
+            style={{
+              flex: 1,
+              height: StyleSheet.hairlineWidth,
+              backgroundColor: Colors.gray,
+            }}
+          />
+
+          <Text style={{ color: Colors.gray, fontSize: 20 }}>or</Text>
+
+          <View
+            style={{
+              flex: 1,
+              height: StyleSheet.hairlineWidth,
+              backgroundColor: Colors.gray,
+            }}
+          />
+        </View>
+
+        <TouchableOpacity
+          onPress={() => handleSubmit(SignInType.Email)}
+          style={[
+            defaultStyles.pillButton,
+            {
+              flexDirection: 'row',
+              gap: 16,
+              marginTop: 20,
+              backgroundColor: '#fff',
+            },
+          ]}
+        >
+          <Ionicons name='mail' size={24} color={'#000'} />
+          <Text style={[defaultStyles.buttonText, { color: '#000' }]}>
+            Continue with email
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => handleSubmit(SignInType.Google)}
+          style={[
+            defaultStyles.pillButton,
+            {
+              flexDirection: 'row',
+              gap: 16,
+              marginTop: 20,
+              backgroundColor: '#fff',
+            },
+          ]}
+        >
+          <Ionicons name='logo-google' size={24} color={'red'} />
+          <Text style={[defaultStyles.buttonText, { color: '#000' }]}>
+            Continue with Google
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => handleSubmit(SignInType.Apple)}
+          style={[
+            defaultStyles.pillButton,
+            {
+              flexDirection: 'row',
+              gap: 16,
+              marginTop: 20,
+              backgroundColor: '#fff',
+            },
+          ]}
+        >
+          <Ionicons name='logo-apple' size={24} color={'#000'} />
+          <Text style={[defaultStyles.buttonText, { color: '#000' }]}>
+            Continue with Apple
           </Text>
         </TouchableOpacity>
       </View>
