@@ -1,7 +1,7 @@
+import CountryPhoneSelection from '@/components/CountryPhoneSelection';
 import Colors from '@/constants/Colors';
 import { defaultStyles } from '@/constants/Styles';
 import { Ionicons } from '@expo/vector-icons';
-import { Link } from 'expo-router';
 import { useState } from 'react';
 import {
   View,
@@ -45,13 +45,12 @@ export default function Login() {
         </Text>
 
         <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder='Country code'
-            keyboardType='numeric'
-            value={countryCode}
-            placeholderTextColor={Colors.gray}
-          />
+          <View style={styles.input}>
+            <CountryPhoneSelection
+              value={countryCode}
+              onChange={setCountryCode}
+            />
+          </View>
 
           <TextInput
             placeholderTextColor={Colors.gray}
