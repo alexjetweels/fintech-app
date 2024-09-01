@@ -1,6 +1,7 @@
 import Colors from '@/constants/Colors';
 import { defaultStyles } from '@/constants/Styles';
-import { Link } from 'expo-router';
+import { useSignUp } from '@clerk/clerk-expo';
+import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   View,
@@ -13,13 +14,40 @@ import {
   Platform,
 } from 'react-native';
 
+import { z } from 'zod';
+import CountryPhoneSelection from '@/components/CountryPhoneSelection';
+
+const schema = z.object({
+  phoneNumber: z.string(),
+  countryCode: z.string(),
+});
+
+type FormFields = z.infer<typeof schema>;
+
 export default function SignUp() {
   const [countryCode, setCountryCode] = useState('+84');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const router = useRouter();
+
+  const { signUp } = useSignUp();
 
   const keyboardVerticalOffset = Platform.OS === 'ios' ? 80 : 0;
 
-  const handleSubmit = () => {};
+  const handleSubmit = async () => {
+    const fullPhoneNumber = countryCode + phoneNumber;
+
+    try {
+      await signUp?.create({
+        phoneNumber: countryCode + phoneNumber,
+      });
+
+      // router.push('/verify/[phone]', {
+      //   phone: countryCode + phoneNumber,
+      // });
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -34,13 +62,12 @@ export default function SignUp() {
         </Text>
 
         <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder='Country code'
-            keyboardType='numeric'
-            value={countryCode}
-            placeholderTextColor={Colors.gray}
-          />
+          <View style={styles.input}>
+            <CountryPhoneSelection
+              value={countryCode}
+              onChange={setCountryCode}
+            />
+          </View>
 
           <TextInput
             placeholderTextColor={Colors.gray}
