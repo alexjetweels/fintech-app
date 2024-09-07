@@ -2,7 +2,8 @@ import Colors from '@/constants/Colors';
 import { defaultStyles } from '@/constants/Styles';
 import { useSignUp } from '@clerk/clerk-expo';
 import { Link, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+
 import {
   View,
   Text,
@@ -16,34 +17,53 @@ import {
 
 import { z } from 'zod';
 import CountryPhoneSelection from '@/components/CountryPhoneSelection';
+import { Controller, useForm } from 'react-hook-form';
 
 const schema = z.object({
-  phoneNumber: z.string(),
-  countryCode: z.string(),
+  phoneNumber: z.string().min(9, { message: 'Phone number is required' }),
+  countryPhoneCode: z.string().min(1, { message: 'Country code is required' }),
 });
 
 type FormFields = z.infer<typeof schema>;
 
 export default function SignUp() {
-  const [countryCode, setCountryCode] = useState('+84');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<FormFields>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      countryPhoneCode: '+84',
+      phoneNumber: '',
+    },
+  });
+
+  const phoneNumber = watch('phoneNumber');
+
   const router = useRouter();
 
   const { signUp } = useSignUp();
 
   const keyboardVerticalOffset = Platform.OS === 'ios' ? 80 : 0;
 
-  const handleSubmit = async () => {
-    const fullPhoneNumber = countryCode + phoneNumber;
+  const onSubmit = async (data: FormFields) => {
+    const { countryPhoneCode, phoneNumber } = data;
+
+    const fullPhoneNumber = countryPhoneCode + phoneNumber;
 
     try {
       await signUp?.create({
-        phoneNumber: countryCode + phoneNumber,
+        phoneNumber: fullPhoneNumber,
       });
 
-      // router.push('/verify/[phone]', {
-      //   phone: countryCode + phoneNumber,
-      // });
+      router.push({
+        pathname: '/verify/[phone]',
+        params: {
+          phone: fullPhoneNumber,
+        },
+      });
     } catch (e) {
       console.error(e);
     }
@@ -61,22 +81,42 @@ export default function SignUp() {
           Enter your phone number. We will send you a confirmation code there
         </Text>
 
-        <View style={styles.inputContainer}>
-          <View style={styles.input}>
-            <CountryPhoneSelection
-              value={countryCode}
-              onChange={setCountryCode}
+        <View style={{ marginVertical: 40 }}>
+          <View style={styles.inputContainer}>
+            <View style={styles.input}>
+              <Controller
+                control={control}
+                name='countryPhoneCode'
+                render={({ field: { onChange, value } }) => (
+                  <CountryPhoneSelection value={value} onChange={onChange} />
+                )}
+              />
+            </View>
+
+            <Controller
+              control={control}
+              name='phoneNumber'
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  placeholderTextColor={Colors.gray}
+                  style={[styles.input, { flex: 1 }]}
+                  placeholder='Mobile number'
+                  keyboardType='numeric'
+                  value={value}
+                  onChangeText={onChange}
+                />
+              )}
             />
           </View>
 
-          <TextInput
-            placeholderTextColor={Colors.gray}
-            style={[styles.input, { flex: 1 }]}
-            placeholder='Mobile number'
-            keyboardType='numeric'
-            value={phoneNumber}
-            onChangeText={setPhoneNumber}
-          />
+          {errors.phoneNumber && (
+            <Text style={{ color: 'red' }}>{errors.phoneNumber.message}</Text>
+          )}
+          {errors.countryPhoneCode && (
+            <Text style={{ color: 'red' }}>
+              {errors.countryPhoneCode.message}
+            </Text>
+          )}
         </View>
 
         <Link href={'/login'} replace asChild>
@@ -95,7 +135,7 @@ export default function SignUp() {
             { marginTop: 20 },
             phoneNumber ? styles.enable : styles.disabled,
           ]}
-          onPress={handleSubmit}
+          onPress={handleSubmit(onSubmit)}
         >
           <Text style={defaultStyles.buttonText}>Sign Up</Text>
         </TouchableOpacity>
@@ -106,8 +146,8 @@ export default function SignUp() {
 
 const styles = StyleSheet.create({
   inputContainer: {
-    marginVertical: 40,
     flexDirection: 'row',
+    marginVertical: 10,
   },
 
   input: {
