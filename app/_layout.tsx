@@ -124,6 +124,13 @@ export function RootLayout() {
           presentation: 'modal',
         }}
       ></Stack.Screen>
+
+      {/* <Stack.Screen
+        name='verify/[phone]'
+        options={{
+          presentation: 'modal',
+        }}
+      ></Stack.Screen> */}
     </Stack>
   );
 }
