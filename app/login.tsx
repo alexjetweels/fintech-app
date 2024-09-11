@@ -1,7 +1,9 @@
 import CountryPhoneSelection from '@/components/CountryPhoneSelection';
 import Colors from '@/constants/Colors';
 import { defaultStyles } from '@/constants/Styles';
+import { isClerkAPIResponseError, useSignIn } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   View,
@@ -12,6 +14,7 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 
 enum SignInType {
@@ -22,13 +25,45 @@ enum SignInType {
 }
 
 export default function Login() {
-  const [countryCode, setCountryCode] = useState('+84');
+  const [countryCode, setCountryCode] = useState('+1');
   const [phoneNumber, setPhoneNumber] = useState('');
-
   const keyboardVerticalOffset = Platform.OS === 'ios' ? 80 : 0;
+  const router = useRouter();
+  const { signIn } = useSignIn();
 
   const handleSubmit = async (type: SignInType) => {
     if (type === SignInType.Phone) {
+      try {
+        const fullPhoneNumber = `${countryCode}${phoneNumber}`;
+
+        const signInResponse = await signIn?.create({
+          identifier: fullPhoneNumber,
+        });
+
+        const firstPhoneFactor = signInResponse?.supportedFirstFactors?.find(
+          (factor) => factor.strategy === 'phone_code'
+        );
+
+        if (firstPhoneFactor?.phoneNumberId) {
+          await signIn?.prepareFirstFactor({
+            strategy: 'phone_code',
+            phoneNumberId: firstPhoneFactor.phoneNumberId,
+          });
+
+          router.push({
+            pathname: '/verify/[phone]',
+            params: { phone: fullPhoneNumber, signin: 'true' },
+          });
+        }
+      } catch (error) {
+        console.error('error', JSON.stringify(error, null, 2));
+
+        if (isClerkAPIResponseError(error)) {
+          if (error.errors[0].code === 'form_identifier_not_found') {
+            Alert.alert('Error', error.errors[0].message);
+          }
+        }
+      }
     }
   };
 

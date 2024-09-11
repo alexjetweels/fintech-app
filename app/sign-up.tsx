@@ -35,15 +35,13 @@ export default function SignUp() {
   } = useForm<FormFields>({
     resolver: zodResolver(schema),
     defaultValues: {
-      countryPhoneCode: '+84',
+      countryPhoneCode: '+1',
       phoneNumber: '',
     },
   });
 
   const phoneNumber = watch('phoneNumber');
-
   const router = useRouter();
-
   const { signUp } = useSignUp();
 
   const keyboardVerticalOffset = Platform.OS === 'ios' ? 80 : 0;
@@ -54,9 +52,9 @@ export default function SignUp() {
     const fullPhoneNumber = countryPhoneCode + phoneNumber;
 
     try {
-      await signUp?.create({
-        phoneNumber: fullPhoneNumber,
-      });
+      // await signUp?.create({
+      //   phoneNumber: fullPhoneNumber,
+      // });
 
       router.push({
         pathname: '/verify/[phone]',
